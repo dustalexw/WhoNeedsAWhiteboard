@@ -379,6 +379,7 @@ function renderTabs() {
     ${TABS.map(([k, ic, label]) => `<button class="tab ${ui.tab === k ? 'active' : ''}" data-act="gotoTab" data-tab="${k}">
       <span class="tab-ic">${ic}</span><span class="tab-label">${label}</span>${counts[k] ? `<span class="badge">${counts[k]}</span>` : ''}</button>`).join('')}
     <span class="spacer"></span>
+    ${installPrompt ? '<button class="btn small primary" data-act="installApp" title="Install as an app on this device">⬇ Install app</button>' : ''}
     <div class="quick">
       <button class="btn small" data-act="newApplicant">＋ Applicant</button>
       <button class="btn small" data-act="newInterview">＋ Interview</button>
@@ -1444,6 +1445,17 @@ function seed() {
   ];
   return normalize({ demo: true, settings: st, applicants: apps, interviews, orientations });
 }
+
+/* ============================== Installable app ============================== */
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; renderTabs(); });
+window.addEventListener('appinstalled', () => { installPrompt = null; renderTabs(); toast('Installed! Look for "HR Whiteboard" on your home screen / desktop.'); });
+ACT.installApp = async () => { if (!installPrompt) return; installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; renderTabs(); };
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed', err)));
+}
+// ask the browser not to clear this app's data under storage pressure
+if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 
 /* ============================== Go ============================== */
 save();

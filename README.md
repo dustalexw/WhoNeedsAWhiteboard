@@ -10,6 +10,25 @@ There's nothing to install. Open `index.html` in any modern browser (Chrome, Edg
 - Everything is saved **privately in that browser on that computer**. Go to **Settings → Download backup** every week to keep a copy. **Restore from backup** brings it back, or moves it to another computer.
 - To use it on a shared computer or from anywhere, you can host the three files (`index.html`, `app.js`, `styles.css`) on any static web host, such as GitHub Pages. Each browser still keeps its own data.
 
+## Put it on your website (e.g. sipassgames.com)
+
+It's a plain static site, so any web host works (cPanel, Netlify, Cloudflare Pages, GitHub Pages, Wix/Squarespace "upload files", etc.).
+
+1. Download **`hr-whiteboard.zip`** (in this repo) and unzip it.
+2. Upload the **contents** to a folder on your site, e.g. `public_html/hr-whiteboard/`.
+3. Visit `https://sipassgames.com/hr-whiteboard/`.
+
+It must be served over **https** for the install button and offline mode to work.
+
+### Install it like an app
+Once it's online, it can be installed on any device:
+- **Chrome / Edge (Windows, Mac, Android):** click **⬇ Install app** in the menu bar, or the install icon in the address bar.
+- **iPhone / iPad:** open the page in Safari, tap **Share**, then **Add to Home Screen**.
+
+After installing, it opens in its own window with its own icon and **keeps working without internet**.
+
+> Each device keeps its own data. Use **Settings → Download backup / Restore** to move data between devices.
+
 ## What it does
 
 ### 📅 The date is always the first thing you see

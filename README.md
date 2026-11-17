@@ -20,6 +20,9 @@ It's a plain static site, so any web host works (cPanel, Netlify, Cloudflare Pag
 
 It must be served over **https** for the install button and offline mode to work.
 
+### Automatic deploys to sipassgames.com (SiteGround)
+`.github/workflows/deploy-siteground.yml` uploads the app to `sipassgames.com/apps/hr-whiteboard/` on every push to `main`. It stays switched off until you add your SiteGround SSH details. The comments at the top of that file list exactly what to add, in **GitHub → Settings → Secrets and variables → Actions**. You can also run it by hand from the **Actions** tab.
+
 ### Install it like an app
 Once it's online, it can be installed on any device:
 - **Chrome / Edge (Windows, Mac, Android):** click **⬇ Install app** in the menu bar, or the install icon in the address bar.

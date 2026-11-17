@@ -1,0 +1,58 @@
+# Uploads the app to sipassgames.com (SiteGround) over SSH on every push to main.
+#
+# One-time setup in GitHub → this repo → Settings → Secrets and variables → Actions:
+#   Variables:  SG_HOST   e.g. ssh.sipassgames.com   (Site Tools → Devs → SSH Keys Manager → "SSH credentials")
+#               SG_USER   e.g. u1234-abcd5678
+#               SG_PORT   18765   (SiteGround's SSH port)
+#               SG_PATH   e.g. www/sipassgames.com/public_html/apps/hr-whiteboard
+#   Secrets:    SG_SSH_KEY          the PRIVATE key from SSH Keys Manager (Actions → Private Key)
+#               SG_SSH_PASSPHRASE   the passphrase you set when creating that key
+# Until SG_HOST is set, this workflow skips itself.
+name: Deploy to sipassgames.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-siteground
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.SG_HOST != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect app files
+        run: |
+          mkdir -p dist
+          cp -r index.html app.js styles.css sw.js manifest.webmanifest icons dist/
+          ls -R dist
+
+      - name: Load SSH key
+        env:
+          SG_SSH_KEY: ${{ secrets.SG_SSH_KEY }}
+          SG_SSH_PASSPHRASE: ${{ secrets.SG_SSH_PASSPHRASE }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SG_SSH_KEY" > ~/.ssh/sg_key
+          chmod 600 ~/.ssh/sg_key
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          printf '#!/bin/sh\nprintf "%%s" "$SG_SSH_PASSPHRASE"\n' > ~/.ssh/askpass
+          chmod 700 ~/.ssh/askpass
+          DISPLAY=:0 SSH_ASKPASS=~/.ssh/askpass SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/sg_key < /dev/null
+          rm -f ~/.ssh/sg_key ~/.ssh/askpass
+          ssh-keyscan -p "${{ vars.SG_PORT || '18765' }}" "${{ vars.SG_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload
+        run: |
+          PORT="${{ vars.SG_PORT || '18765' }}"
+          DEST="${{ vars.SG_PATH || 'www/sipassgames.com/public_html/apps/hr-whiteboard' }}"
+          ssh -p "$PORT" "${{ vars.SG_USER }}@${{ vars.SG_HOST }}" "mkdir -p '$DEST'"
+          rsync -rlvz --delete -e "ssh -p $PORT" dist/ "${{ vars.SG_USER }}@${{ vars.SG_HOST }}:$DEST/"
+          echo "Deployed → https://sipassgames.com/apps/hr-whiteboard/"
